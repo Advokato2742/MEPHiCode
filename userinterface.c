@@ -16,7 +16,6 @@ void UIprintExistigVectors(Vector** list, int* numberOfExistingVectors)
     return;
 }
 
-
 void UIcreateNewVector(Vector** list, int* numberOfExistingVectors, int option, int dim)
 {
     printf("starting creating process for new vector\n");
@@ -32,17 +31,12 @@ void UIcreateNewVector(Vector** list, int* numberOfExistingVectors, int option, 
     if (option == 1)
     {
         dim = -1;
-        while (dim < 0)
+        while (dim < 1)
         {
             printf("please enter dimension of space\n");
             printf("dimension cannot be less than 1\n");
             dim = readIntNumb();
         }
-    }
-    if (dim < 1)
-    {
-        printf("error receiving information");
-        exit(-2);
     }
     Vector* a = info->createNewVector(&dim, info);
     if (option == 1)
@@ -57,10 +51,10 @@ void UIcreateNewVector(Vector** list, int* numberOfExistingVectors, int option, 
 
 void UIauxiliaryFunction(Vector** list, int* numberOfExistingVectors, int* first, void* second, int n)
 {
-    while (*numberOfExistingVectors < n)
+    while (*numberOfExistingVectors < 1)
     {
-        printf("not enough vectors to add up. please add vector\n");
-        UIcreateNewVector(list, numberOfExistingVectors, 1, -1);
+        printf("you don't have enough vectors. please add at least one vector\n");
+        return;
     }
 
     while (*first < 0 || *first > *numberOfExistingVectors)
@@ -91,9 +85,15 @@ void UIaddUpVector(Vector** list, int* numberOfExistingVectors)
     int first = -1;
     int second = -1;
     UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 2);
-    Vector* a = ((**list).vInfo)->addUpVector(list[first], list[second]);
-    list[*(numberOfExistingVectors - 1)] = a;
-
+    UIprintExistigVectors(list, numberOfExistingVectors);
+    Vector* a = ((**list).vInfo)->addUpVector(list[first - 1], list[second - 1]);
+    printVector(a);
+    printf("before allow");
+    Vector* c = list[(*numberOfExistingVectors) - 1];
+    list[(*numberOfExistingVectors) - 1] = a;
+    freeVector(c);
+    printf("replace a with vect");
+    UIprintExistigVectors(list, numberOfExistingVectors);
     return;
 }
 
@@ -103,7 +103,7 @@ void UIscalarMultiply(Vector** list, int* numberOfExistingVectors)
     int second = -1;
     UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 2);
     Vector* a = ((**list).vInfo)->scalarMultiply(list[first], list[second]);
-    list[*(numberOfExistingVectors - 1)] = a;
+    list[(*numberOfExistingVectors) - 1] = a;
     return;
 }
 
@@ -113,7 +113,7 @@ void UImultiplyByNumber(Vector** list, int* numberOfExistingVectors)
     float second = -1;
     UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 1);
     Vector* a = ((**list).vInfo)->multiplyByNumber(list[first], &second);
-    list[*(numberOfExistingVectors - 1)] = a;
+    list[(*numberOfExistingVectors) - 1] = a;
     return;
 }
 

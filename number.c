@@ -25,7 +25,7 @@ float readFloatNumb(){
         err = scanf("%f", &t);
         scanf("%*[^\n]");
         if (err == -1){
-            printf("EOF\n", err);
+            printf("EOF\n");
             return err;
         }
         else if (err == 0){
