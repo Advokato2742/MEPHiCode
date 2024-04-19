@@ -10,4 +10,5 @@ typedef struct FieldInfo
     void* (*printElement)(void*);
 } FieldInfo;
 
-FieldInfo* createInfo();
+extern FieldInfo* infoInt;
+extern FieldInfo* infoReal;
