@@ -36,13 +36,13 @@ void printElementReal(float* element)
     return;
 }
 
-VectorReal* createNewVectorReal(int* size, FieldInfo* info)
+VectorReal* createNewVectorReal(int* size)
 {
     printf("creating vector\n");
     VectorReal* v = malloc(sizeof(VectorReal));
     v->size = *size;
-    v->elements = (float*) malloc(v->size * info->elementSize);
-    v->vInfo = info;
+    v->elements = (float*) malloc(v->size * infoReal->elementSize);
+    v->vInfo = infoReal;
     if (v == NULL)
     {
         printf("vector allocation error\n");
@@ -113,7 +113,7 @@ VectorReal* addUpVectorsReal(VectorReal* a, VectorReal* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    VectorReal* c = createNewVectorReal(&maxLength, a->vInfo);
+    VectorReal* c = createNewVectorReal(&maxLength);
     for (int i = 0; i < minLength; i++)
     {
         *((float*)(c->elements)+i) = *((float*)(a->elements)+i) + *((float*)(b->elements)+i);
@@ -142,7 +142,7 @@ VectorReal* scalarMultiplyReal(VectorReal* a, VectorReal* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    VectorReal* c = createNewVectorReal(&maxLength, a->vInfo);
+    VectorReal* c = createNewVectorReal(&maxLength);
     for (int i = 0; i < minLength; i++)
     {
         *((float*)(c->elements)+i) = *((float*)(a->elements)+i) * *((float*)(b->elements)+i);
@@ -157,7 +157,7 @@ VectorReal* scalarMultiplyReal(VectorReal* a, VectorReal* b)
 VectorReal* multiplyByNumberReal(VectorReal* a, float* number)
 {
     printf("multiplying by number\n");
-    VectorReal* b = createNewVectorReal(&a->size, a->vInfo);
+    VectorReal* b = createNewVectorReal(&a->size);
     for (int i = 0; i < b->size; i++)
     {
         *((float*)(b->elements)+i) = *((float*) (a->elements) + i) * *number;

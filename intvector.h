@@ -7,7 +7,7 @@ typedef struct VectorInt
     void* elements;
     FieldInfo* vInfo;
 } VectorInt;
-VectorInt* createNewVectorInt(int*, FieldInfo*);
+VectorInt* createNewVectorInt(int*);
 FieldInfo* createInfoInt();
 
 void setVectorInt(VectorInt*);

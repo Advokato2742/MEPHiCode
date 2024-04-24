@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "FieldInfo.h"
-#include "vector.h"
+#include "fieldInfo.h"
+#include "intvector.h"
+#include "realvector.h"
 #include "number.h"
 #include "userinterface.h"
+
+void printElementInt(int* element)
+{
+    printf("%d", (int)(*element));
+    return;
+}
 
 void UIprintExistigVectors(Vector** list, int* numberOfExistingVectors)
 {
@@ -86,7 +93,15 @@ void UIaddUpVector(Vector** list, int* numberOfExistingVectors)
     int second = -1;
     UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 2);
     UIprintExistigVectors(list, numberOfExistingVectors);
-    Vector* a = ((**list).vInfo)->addUpVector(list[first - 1], list[second - 1]);
+    Vector* a;
+    if (list[first - 1]->vInfo != list[second - 1]->vInfo)
+    {
+        a = infoReal->addUpVector(list[first - 1], list[second - 1]);
+    }
+    else
+    {
+        a = ((**list).vInfo)->addUpVector(list[first - 1], list[second - 1]);
+    }
     printVector(a);
     printf("before allow");
     Vector* c = list[(*numberOfExistingVectors) - 1];

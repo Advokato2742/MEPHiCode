@@ -7,7 +7,7 @@ typedef struct VectorReal
     void* elements;
     FieldInfo* vInfo;
 } VectorReal;
-VectorReal* createNewVectorReal(int*, FieldInfo*);
+VectorReal* createNewVectorReal(int*);
 FieldInfo* createInfoReal();
 
 void setVectorReal(VectorReal*);

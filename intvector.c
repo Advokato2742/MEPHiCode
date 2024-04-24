@@ -1,4 +1,4 @@
-#include "FieldInfo.h"
+#include "fieldInfo.h"
 #include "intvector.h"
 #include "number.h"
 #include <stdio.h>
@@ -22,19 +22,13 @@ FieldInfo* createInfoInt()
     return info;
 }
 
-void printElementInt(int* element)
-{
-    printf("%d", (int)(*element));
-    return;
-}
-
-VectorInt* createNewVectorInt(int* size, FieldInfo* info)
+VectorInt* createNewVectorInt(int* size)
 {
     printf("creating vector\n");
     VectorInt* v = malloc(sizeof(VectorInt));
     v->size = *size;
-    v->elements = (int*) malloc(v->size * info->elementSize);
-    v->vInfo = info;
+    v->elements = (int*) malloc(v->size * infoInt->elementSize);
+    v->vInfo = infoInt;
     if (v == NULL)
     {
         printf("vector allocation error\n");
@@ -97,6 +91,11 @@ void freeVectorInt(VectorInt* v)
 
 VectorInt* addUpVectorsInt(VectorInt* a, VectorInt* b)
 {
+    if (a->vInfo != b->vInfo)
+    {
+        printf("integer function cannot add up vectors of different types\n");
+        return;
+    }
     printf("adding up vector\n");
     int maxLength = a->size;
     int minLength = b->size;
@@ -105,7 +104,7 @@ VectorInt* addUpVectorsInt(VectorInt* a, VectorInt* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    VectorInt* c = createNewVectorInt(&maxLength, a->vInfo);
+    VectorInt* c = createNewVectorInt(&maxLength);
     for (int i = 0; i < minLength; i++)
     {
         *((int*)(c->elements)+i) = *((int*)(a->elements)+i) + *((int*)(b->elements)+i);
@@ -126,6 +125,11 @@ VectorInt* addUpVectorsInt(VectorInt* a, VectorInt* b)
 
 VectorInt* scalarMultiplyInt(VectorInt* a, VectorInt* b)
 {
+    if (a->vInfo != b->vInfo)
+    {
+        printf("integer function cannot add up vectors of different types\n");
+        return;
+    }
     printf("making scalar Multyplying\n");
     int maxLength = a->size;
     int minLength = b->size;
@@ -134,7 +138,7 @@ VectorInt* scalarMultiplyInt(VectorInt* a, VectorInt* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    VectorInt* c = createNewVectorInt(&maxLength, a->vInfo);
+    VectorInt* c = createNewVectorInt(&maxLength);
     for (int i = 0; i < minLength; i++)
     {
         *((int*)(c->elements)+i) = *((int*)(a->elements)+i) * *((int*)(b->elements)+i);
@@ -149,7 +153,7 @@ VectorInt* scalarMultiplyInt(VectorInt* a, VectorInt* b)
 VectorInt* multiplyByNumberInt(VectorInt* a, int* number)
 {
     printf("multiplying by number\n");
-    VectorInt* b = createNewVectorInt(&a->size, a->vInfo);
+    VectorInt* b = createNewVectorInt(&a->size);
     for (int i = 0; i < b->size; i++)
     {
         *((int*)(b->elements)+i) = *((int*)(a->elements)+i) * *number;

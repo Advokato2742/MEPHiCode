@@ -7,6 +7,7 @@ typedef struct FieldInfo
     void* (*scalarMultiply)(void*, void*);
     void* (*multiplyByNumber)(void*, void*);
     void* (*createNewVector)(void*, void*);
+    void* (*scalarZero)();
     void* (*printElement)(void*);
 } FieldInfo;
 
