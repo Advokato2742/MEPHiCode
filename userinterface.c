@@ -1,187 +1,101 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "fieldInfo.h"
+#include "userinterface.h"
+#include "vector.h"
 #include "intvector.h"
 #include "realvector.h"
 #include "number.h"
-#include "userinterface.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-void printElementInt(int* element)
+void UImain()
 {
-    printf("%d", (int)(*element));
-    return;
-}
-
-void UIprintExistigVectors(Vector** list, int* numberOfExistingVectors)
-{
-    for (int i = 0; i < *numberOfExistingVectors; i++)
+    int option = -1;
+    fieldInfo* info;
+    while (option != 1 && option != 2)
     {
-        printf("vector %d\n", i+1);
-        printf("%d\n", list[i]->size);
-        printVector(list[i]);
+        printf("select data option. to work with integer coefficients, enter 1. to work with real coefficients, enter 2.\n");
+        option = readIntNumb();
     }
-    return;
-}
-
-void UIcreateNewVector(Vector** list, int* numberOfExistingVectors, int option, int dim)
-{
-    printf("starting creating process for new vector\n");
-    Vector** v1 = (Vector**) realloc(list, (*numberOfExistingVectors + 1) * sizeof(Vector*));
-    if (v1 == NULL)
-    {
-        printf("allocating error\n");
-        exit(-1);
-    }
-    list = v1;
-
-    FieldInfo* info = createInfo();
     if (option == 1)
     {
-        dim = -1;
-        while (dim < 1)
-        {
-            printf("please enter dimension of space\n");
-            printf("dimension cannot be less than 1\n");
-            dim = readIntNumb();
-        }
-    }
-    Vector* a = info->createNewVector(&dim, info);
-    if (option == 1)
-    {
-        setVector(a);
-    }
-    list[*numberOfExistingVectors] = a;
-    printVector(list[*numberOfExistingVectors]);
-    (*numberOfExistingVectors)++;
-    return;
-}
-
-void UIauxiliaryFunction(Vector** list, int* numberOfExistingVectors, int* first, void* second, int n)
-{
-    while (*numberOfExistingVectors < 1)
-    {
-        printf("you don't have enough vectors. please add at least one vector\n");
-        return;
-    }
-
-    while (*first < 0 || *first > *numberOfExistingVectors)
-    {
-        printf("please select vector numbers from 1 to %d\n", *numberOfExistingVectors);
-        *first = readIntNumb();
-    }
-    if (n == 2)
-    {
-        while (*((int*) second) < 0 || *((int*) second) > *numberOfExistingVectors)
-        {
-            printf("please select vector numbers from 1 to %d\n", *numberOfExistingVectors);
-            *((int*) second) = readIntNumb();
-        }
-    }
-    else if (n == 1)
-    {
-        printf("enter the number to multiply by vector\n");
-        *((float*) second) = readFloatNumb();
-    }
-
-    UIcreateNewVector(list, numberOfExistingVectors, 0, 1);
-    return;
-}
-
-void UIaddUpVector(Vector** list, int* numberOfExistingVectors)
-{
-    int first = -1;
-    int second = -1;
-    UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 2);
-    UIprintExistigVectors(list, numberOfExistingVectors);
-    Vector* a;
-    if (list[first - 1]->vInfo != list[second - 1]->vInfo)
-    {
-        a = infoReal->addUpVector(list[first - 1], list[second - 1]);
+        info = createInfoInt();
     }
     else
     {
-        a = ((**list).vInfo)->addUpVector(list[first - 1], list[second - 1]);
+        info = createInfoReal();
     }
+    option = -1;
+    while (option < 1 || option > 3)
+    {
+        printf("Select an action.\n1 - sum up two vectors\n2 - scalar multiply two vectors\n3 - multiply vector by a number\n");
+        option = readIntNumb();
+    }
+    printf("starting process\n");
+    int dimension = -1;
+    while (dimension < 1)
+    {
+        printf("enter the quantity of vector coefficients. cannot be less than 1\n");
+        dimension = readIntNumb();
+    }
+    vector* a = createNewVector(&dimension, info);
+    enterCoefficient(getSize(a), getElements(a), getAdditionalData(a));
     printVector(a);
-    printf("before allow");
-    Vector* c = list[(*numberOfExistingVectors) - 1];
-    list[(*numberOfExistingVectors) - 1] = a;
+    vector* b;
+    vector* c;
+    void* multiplyer;
+    if (option == 3)
+    {
+        if (info->additional == 'i')
+        {
+            printf("enter an integer number\n");
+            int number = readIntNumb();
+            multiplyer = (void*) &number;
+        }
+        else
+        {
+            printf("enter a float number\n");
+            float number = readFloatNumb();
+            multiplyer = (void*) &number;
+        }
+    }
+    else
+    {
+        dimension = -1;
+        printf("for second vector\n");
+        while (dimension < 1)
+        {
+            printf("enter the quantity of vector coefficients. cannot be less than 1\n");
+            dimension = readIntNumb();
+        }
+        b = createNewVector(&dimension, info);
+        enterCoefficient(getSize(b), getElements(b), getAdditionalData(b));
+    }
+    switch (option)
+    {
+    case 1:
+        c = sumUpVectors(a, b);
+        freeVector(b);
+        break;
+    case 2:
+        c = scalarMultiplyVectors(a, b);
+        freeVector(b);
+        break;
+    case 3:
+        c = multiplyByNumber(a, multiplyer);
+        break;
+    default:
+        break;
+    }
+    printVector(c);
+    freeVector(a);
     freeVector(c);
-    printf("replace a with vect");
-    UIprintExistigVectors(list, numberOfExistingVectors);
+    free(info);
     return;
 }
 
-void UIscalarMultiply(Vector** list, int* numberOfExistingVectors)
+void UIlaunch()
 {
-    int first = -1;
-    int second = -1;
-    UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 2);
-    Vector* a = ((**list).vInfo)->scalarMultiply(list[first], list[second]);
-    list[(*numberOfExistingVectors) - 1] = a;
-    return;
-}
-
-void UImultiplyByNumber(Vector** list, int* numberOfExistingVectors)
-{
-    int first = -1;
-    float second = -1;
-    UIauxiliaryFunction(list, numberOfExistingVectors, &first, &second, 1);
-    Vector* a = ((**list).vInfo)->multiplyByNumber(list[first], &second);
-    list[(*numberOfExistingVectors) - 1] = a;
-    return;
-}
-
-void UIendOfWork(Vector** list, int* numberOfExistingVectors)
-{
-    for (int i = 0; i < *numberOfExistingVectors; i++)
-    {
-        freeVector(*(list + i));
-    }
-    free(list);
-    exit(0);
-    return;
-}
-
-void userInterface()
-{
-    int numberOfExistingVectors = 0;
-    int error = 0;
-    Vector** list = (Vector**) malloc(sizeof(Vector**));
-    while (error == 0)
-    {
-        int option = -1;
-        while (option < 1 || option > 6)
-        {
-            printf("choose option:\n1 - createNewVector\n2 - addUpVector\n3 - scalarMultiply\n");
-            printf("4 - multiplyByNumber\n5 - end of work\n6 - print all existing vectors\n");
-            option = readIntNumb();
-            if (option < 1 || option > 6)
-            {
-                printf("the option number must be a number from 1 to 6\n");
-            }
-        }
-        switch (option)
-        {
-        case 1:
-            UIcreateNewVector(list, &numberOfExistingVectors, 1, -1);
-            break;
-        case 2:
-            UIaddUpVector(list, &numberOfExistingVectors);
-            break;
-        case 3:
-            UIscalarMultiply(list, &numberOfExistingVectors);
-            break;
-        case 4:
-            UImultiplyByNumber(list, &numberOfExistingVectors);
-            break;
-        case 5:
-            UIendOfWork(list, &numberOfExistingVectors);
-            break;
-        case 6:
-            UIprintExistigVectors(list, &numberOfExistingVectors);
-            break;
-        }
-    }
+    printf("laboratory work on the subject \"polymorphic and abstract data types\"\n");
+    printf("created by Abaidulina V. B23-554\n");
+    UImain();
     return;
 }

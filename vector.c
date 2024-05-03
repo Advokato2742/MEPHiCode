@@ -1,111 +1,107 @@
-#include "FieldInfo.h"
-#include "vector.h"
+#include "fieldInfo.h"
+#include "intvector.h"
+#include "realvector.h"
 #include "number.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
-FieldInfo* createInfo()
+typedef struct vector
 {
-    FieldInfo* info = malloc(sizeof(FieldInfo));
-    if (info == NULL)
+    int size;
+    void* elements;
+    fieldInfo* info;
+} vector;
+
+int compareFieldInfo(fieldInfo* a, fieldInfo* b)
+{
+    int result = 1;
+    if (a->additional != b->additional)
     {
-        printf("allocation error\n");
-        exit(-1);
+        result = 0;
     }
-    info->elementSize = sizeof(float);
-    info->addUpVector = (void*)addUpVector;
-    info->createNewVector = (void*)createNewVector;
-    info->multiplyByNumber = (void*)multiplyByNumber;
-    info->printElement = (void*)printElement;
-    info->scalarMultiply = (void*)scalarMultiply;
-    return info;
+    return result;
 }
 
-void printElement(float* element)
+void setToZero(vector* v)
 {
-    float a = fabs(*element);
-    if (a - (int) a < 0.0001)
+    void* arg;
+    for (int i = 0; i < v->size; i++)
     {
-        printf("%d", (int)(*element));
-    }
-    else
-    {
-        printf("%.4f", *element);
+        arg = v->info->getElement(v->elements, i);
+        v->info->setToZero(arg);
     }
     return;
 }
 
-Vector* createNewVector(int* size, FieldInfo* info)
+vector* createNewVector(int* dimension, fieldInfo* info)
 {
     printf("creating vector\n");
-    Vector* v = malloc(sizeof(Vector));
-    v->size = *size;
-    v->elements = (float*)malloc(v->size* info->elementSize);
-    v->vInfo = info;
+    vector* v = malloc(sizeof(vector));
     if (v == NULL)
     {
         printf("vector allocation error\n");
         exit(-1);
     }
+    v->size = *dimension;
+    v->elements = (int*) malloc(v->size * info->elementSize);
     if (v->elements == NULL)
     {
         printf("elements allocation error\n");
         exit(-1);
     }
+    v->info = info;
     printf("setting to zero\n");
     setToZero(v);
     return v;
 }
 
-void setVector(Vector* v)
+void printElement(fieldInfo* info, void *element)
 {
-    printf("enter %d numbers - vector coordinates\n", v->size);
-    for (int i = 0; i < v->size; i++)
+    if (info->additional == 'i')
     {
-        printf("please enter %d coordinate\n", i+1);
-        float d = readFloatNumb();
-        *((float*)(v->elements)+i) = d;
+        printf("%d", *((int*) element));
+    }
+    else if (info->additional == 'r')
+    {
+        printf("%f", *((float*) element));
+    }
+    else
+    {
+        printf("undefined fieldInfo\n");
     }
     return;
 }
 
-void printVector(Vector* v)
+void printVector(vector* v)
 {
-    for (int i = 0; i < v->size; i++)
+    for (int i = 0; i < v->size - 1; i ++)
     {
-        printElement(((float*)(v->elements)+i));
-        if (i + 1 != v->size)
-        {
-            printf(" ");
-        }
-        else
-        {
-            printf("\n");
-        }
+        printElement(v->info, v->info->getElement(v->elements, i));
+        printf(" ");
     }
+    printElement(v->info, v->info->getElement(v->elements, v->size - 1));
+    printf("\n");
     return;
 }
 
-void setToZero(Vector* v)
+void freeVector(vector* v)
 {
-    for (int i = 0; i < v->size; i++)
-    {
-        *((float*)(v->elements)+i) = 0;
-    }
-    return;
-}
-
-void freeVector(Vector* v)
-{
-    free((float*)v->elements);
+    free(v->elements);
     free(v);
     return;
 }
 
-Vector* addUpVector(Vector* a, Vector* b)
+vector* sumUpVectors(vector* a, vector* b)
 {
-    printf("adding up vector\n");
+    void* arg1;
+    void* arg2;
+    void* result;
+    if (compareFieldInfo(a->info, b->info) == 0)
+    {
+        printf("function cannot add up vectors of different types\n");
+        return NULL;
+    }
+    printf("adding up vectors\n");
     int maxLength = a->size;
     int minLength = b->size;
     if (b->size > maxLength)
@@ -113,20 +109,43 @@ Vector* addUpVector(Vector* a, Vector* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    Vector* c = createNewVector(&maxLength, a->vInfo);
+    vector* c = createNewVector(&maxLength, a->info);
     for (int i = 0; i < minLength; i++)
     {
-        *((float*)(c->elements)+i) = *((float*)(a->elements)+i) + *((float*)(b->elements)+i);
+        arg1 = a->info->getElement(a->elements, i);
+        arg2 = a->info->getElement(b->elements, i);
+        result = a->info->getElement(c->elements, i);
+        a->info->sumUp(arg1, arg2, result);
     }
     for (int i = minLength; i < maxLength; i++)
     {
-        *((float*)(c->elements)+i) = *((float*)(b->elements)+i);
+        result = a->info->getElement(c->elements, i);
+        if (maxLength == b->size)
+        {
+            arg1 = a->info->setToZero(arg1);
+            arg2 = b->info->getElement(b->elements, i);
+            a->info->sumUp(arg1, arg2, result);
+        }
+        else
+        {
+            arg1 = a->info->getElement(a->elements, i);
+            arg2 = a->info->setToZero(arg2);
+            a->info->sumUp(arg1, arg2, result);
+        }
     }
     return c;
 }
 
-Vector* scalarMultiply(Vector* a, Vector* b)
+vector* scalarMultiplyVectors(vector* a, vector* b)
 {
+    void* arg1;
+    void* arg2;
+    void* result;
+    if (compareFieldInfo(a->info, b->info) == 0)
+    {
+        printf("function cannot add up vectors of different types\n");
+        return NULL;
+    }
     printf("making scalar Multyplying\n");
     int maxLength = a->size;
     int minLength = b->size;
@@ -135,25 +154,76 @@ Vector* scalarMultiply(Vector* a, Vector* b)
         maxLength = b->size;
         minLength = a->size;
     }
-    Vector* c = createNewVector(&maxLength, a->vInfo);
+    vector* c = createNewVector(&maxLength, a->info);
     for (int i = 0; i < minLength; i++)
     {
-        *((float*)(c->elements)+i) = *((float*)(a->elements)+i) * *((float*)(b->elements)+i);
+        arg1 = a->info->getElement(a->elements, i);
+        arg2 = a->info->getElement(b->elements, i);
+        result = a->info->getElement(c->elements, i);
+        a->info->multiply(arg1, arg2, result);
     }
     for (int i = minLength; i < maxLength; i++)
     {
-        *((float*)(c->elements)+i) = 0;
+        result = c->info->getElement(c->elements, i);
+        c->info->setToZero(result);
     }
     return c;
 }
 
-Vector* multiplyByNumber(Vector* a, float* number)
+vector* multiplyByNumber(vector* a, void* arg2)
 {
+    void* arg1;
+    void* result;
     printf("multiplying by number\n");
-    Vector* b = createNewVector(&a->size, a->vInfo);
+    vector* b = createNewVector(&a->size, a->info);
     for (int i = 0; i < b->size; i++)
     {
-        *((float*)(b->elements)+i) = *((float*)(a->elements)+i) * *number;
+        arg1 = a->info->getElement(a->elements, i);
+        result = a->info->getElement(b->elements, i);
+        a->info->multiply(arg1, arg2, result);
     }
+    printVector(b);
     return b;
+}
+
+void* enterCoefficient(int size, void* elements, char data)
+{
+    printf("get ready\n");
+    if (data == 'i')
+    {
+        for (int i = 0; i < size; i++)
+        {
+            printf("enter %d int coefficient\n", i+1);
+            *(((int*) elements) + i) = readIntNumb();
+        }
+    }
+    else if (data == 'r')
+    {
+        for (int i = 0; i < size; i++)
+        {
+            printf("enter %d real coefficient\n", i+1);
+            *(((float*) elements) + i) = readFloatNumb();
+        }
+    }
+    else
+    {
+        printf("unknown data\n");
+        exit(-1);
+    }
+    return elements;
+}
+
+void* getElements(vector* v)
+{
+    return v->elements;
+}
+
+int getSize(vector* v)
+{
+    return v->size;
+}
+
+char getAdditionalData(vector* v)
+{
+    return v->info->additional;
 }
