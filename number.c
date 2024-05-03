@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "number.h"
+#include <stdio.h>
 
 int readIntNumb(){
     int t, err = -1;
