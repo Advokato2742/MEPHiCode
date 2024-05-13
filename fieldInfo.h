@@ -3,9 +3,9 @@
 typedef struct fieldInfo
 {
     int elementSize;
-    void* (*sumUp)(void*, void*, void*);
-    void* (*multiply)(void*, void*, void*);
-    void* (*getElement)(void*, int);
-    void* (*setToZero)();
+    void* (*sumUp)(const void*, const void*, void*);
+    void* (*multiply)(const void*, const void*, void*);
+    void* (*getElement)(const void*, int);
+    void* (*setToZero)(void*);
     char additional;
 } fieldInfo;

@@ -35,7 +35,6 @@ void setToZero(vector* v)
 
 vector* createNewVector(int* dimension, fieldInfo* info)
 {
-    printf("creating vector\n");
     vector* v = malloc(sizeof(vector));
     if (v == NULL)
     {
@@ -50,14 +49,13 @@ vector* createNewVector(int* dimension, fieldInfo* info)
         exit(-1);
     }
     v->info = info;
-    printf("setting to zero\n");
     setToZero(v);
     return v;
 }
 
 void printElement(fieldInfo* info, void *element)
 {
-    if (info->additional == 'i')
+    if (info->additional == 'i' || info->additional == 't')
     {
         printf("%d", *((int*) element));
     }
@@ -67,7 +65,7 @@ void printElement(fieldInfo* info, void *element)
     }
     else
     {
-        printf("undefined fieldInfo\n");
+        printf("undefined fieldInfo (vector.c:70)\n");
     }
     return;
 }
@@ -101,7 +99,6 @@ vector* sumUpVectors(vector* a, vector* b)
         printf("function cannot add up vectors of different types\n");
         return NULL;
     }
-    printf("adding up vectors\n");
     int maxLength = a->size;
     int minLength = b->size;
     if (b->size > maxLength)
@@ -146,7 +143,6 @@ vector* scalarMultiplyVectors(vector* a, vector* b)
         printf("function cannot add up vectors of different types\n");
         return NULL;
     }
-    printf("making scalar Multyplying\n");
     int maxLength = a->size;
     int minLength = b->size;
     if (b->size > maxLength)
@@ -174,7 +170,6 @@ vector* multiplyByNumber(vector* a, void* arg2)
 {
     void* arg1;
     void* result;
-    printf("multiplying by number\n");
     vector* b = createNewVector(&a->size, a->info);
     for (int i = 0; i < b->size; i++)
     {
@@ -182,14 +177,13 @@ vector* multiplyByNumber(vector* a, void* arg2)
         result = a->info->getElement(b->elements, i);
         a->info->multiply(arg1, arg2, result);
     }
-    printVector(b);
     return b;
 }
 
 void* enterCoefficient(int size, void* elements, char data)
 {
     printf("get ready\n");
-    if (data == 'i')
+    if (data == 'i' || data == 't')
     {
         for (int i = 0; i < size; i++)
         {
@@ -226,4 +220,9 @@ int getSize(vector* v)
 char getAdditionalData(vector* v)
 {
     return v->info->additional;
+}
+
+fieldInfo* getInfo(vector* v)
+{
+    return v->info;
 }

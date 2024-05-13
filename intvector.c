@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-void* sumUpInt(void *arg1, void *arg2, void *result)
+void* sumUpInt(const void *arg1, const void *arg2, void *result)
 {
     int* first = (int*) arg1;
     int* second = (int*) arg2;
@@ -13,7 +13,7 @@ void* sumUpInt(void *arg1, void *arg2, void *result)
     return result;
 }
 
-void* multiplyInt(void* arg1,  void* arg2, void* result)
+void* multiplyInt(const void* arg1, const void* arg2, void* result)
 {
     int* first = (int*) arg1;
     int* second = (int*) arg2;
@@ -27,25 +27,29 @@ void* setToZeroInt(void* arg)
     return arg;
 }
 
-void* getElementInt(void* elements, int index)
+void* getElementInt(const void* elements, int index)
 {
     int* element = ((int*) elements + index);
     return (void*) element;
 }
 
-fieldInfo* createInfoInt()
+fieldInfo* getInfoInt()
 {
-    fieldInfo* info = malloc(sizeof(fieldInfo));
+    static fieldInfo* info = NULL;
     if (info == NULL)
     {
-        printf("allocation error\n");
-        exit(-1);
+        info = malloc(sizeof(fieldInfo));
+        if (info == NULL)
+        {
+            printf("in intvector.c in getinfoint: allocation error\n");
+            exit(-1);
+        }
+        info->elementSize = sizeof(int);
+        info->sumUp = sumUpInt;
+        info->multiply = multiplyInt;
+        info->getElement = getElementInt;
+        info->setToZero = setToZeroInt;
+        info->additional = 'i';
     }
-    info->elementSize = sizeof(int);
-    info->sumUp = sumUpInt;
-    info->multiply = multiplyInt;
-    info->getElement = getElementInt;
-    info->setToZero = setToZeroInt;
-    info->additional = 'i';
     return info;
 }

@@ -12,9 +12,6 @@ int readIntNumb(){
         else if (err == 0){
             printf("alphabet\nPlease enter an integer\n");
         }
-        else{
-            printf("integer read\n");
-        }
     }
     return t;
 }
@@ -30,9 +27,6 @@ float readFloatNumb(){
         }
         else if (err == 0){
             printf("alphabet\nPlease enter a number");
-        }
-        else{
-            printf("all right\n");
         }
     }
     return t;

@@ -17,11 +17,11 @@ void UImain()
     }
     if (option == 1)
     {
-        info = createInfoInt();
+        info = getInfoInt();
     }
     else
     {
-        info = createInfoReal();
+        info = getInfoReal();
     }
     option = -1;
     while (option < 1 || option > 3)

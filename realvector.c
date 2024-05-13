@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-void* sumUpReal(void *arg1, void *arg2, void *result)
+void* sumUpReal(const void *arg1, const void *arg2, void *result)
 {
     float* first = (float*) arg1;
     float* second = (float*) arg2;
@@ -13,7 +13,7 @@ void* sumUpReal(void *arg1, void *arg2, void *result)
     return result;
 }
 
-void* multiplyReal(void* arg1,  void* arg2, void* result)
+void* multiplyReal(const void* arg1, const void* arg2, void* result)
 {
     float* first = (float*) arg1;
     float* second = (float*) arg2;
@@ -27,25 +27,29 @@ void* setToZeroReal(void* arg)
     return arg;
 }
 
-void* getElementReal(void* elements, int index)
+void* getElementReal(const void* elements, int index)
 {
     float* element = ((float*) elements + index);
     return (void*) element;
 }
 
-fieldInfo* createInfoReal()
+fieldInfo* getInfoReal()
 {
-    fieldInfo* info = malloc(sizeof(fieldInfo));
+    static fieldInfo* info = NULL;
     if (info == NULL)
     {
-        printf("allocation error\n");
-        exit(-1);
+        info = malloc(sizeof(fieldInfo));
+        if (info == NULL)
+        {
+            printf("in realvector.c in createinforeal: allocation error\n");
+            exit(-1);
+        }
+        info->elementSize = sizeof(float);
+        info->sumUp = sumUpReal;
+        info->multiply = multiplyReal;
+        info->getElement = getElementReal;
+        info->setToZero = setToZeroReal;
+        info->additional = 'r';
     }
-    info->elementSize = sizeof(float);
-    info->sumUp = sumUpReal;
-    info->multiply = multiplyReal;
-    info->getElement = getElementReal;
-    info->setToZero = setToZeroReal;
-    info->additional = 'r';
     return info;
 }
