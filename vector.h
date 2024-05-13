@@ -12,6 +12,7 @@ void* enterCoefficient(int size, void* elements, char data);
 void* getElements(vector* v);
 int getSize(vector* v);
 char getAdditionalData(vector* v);
+fieldInfo* getInfo(vector* v);
 
 vector* createNewVector(int* dimension, fieldInfo* info);
 vector* sumUpVectors(vector* a, vector* b);
