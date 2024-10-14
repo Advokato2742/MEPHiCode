@@ -6,10 +6,9 @@
 class Domino {
 private:
 	static inline const uint8_t q{7};
+    uint8_t left{};
+    uint8_t right{};
 public:
-	uint8_t left{};
-	uint8_t right{};
-
 	Domino();
 	Domino(int a, int b);
 
@@ -22,32 +21,39 @@ public:
 
 	bool operator ==(const Domino& other) const;
 	Domino& operator =(const Domino& other);
+	bool operator <(const Domino& other) const;
+    bool operator >(const Domino& other) const;
+    bool operator !=(const Domino& other) const;
+    bool operator <=(const Domino& other) const;
+    bool operator >=(const Domino& other) const;
 };
 
-class Dominoes {
+class Bunch {
 private:
-	std::vector<Domino> bunch;
+    size_t size;
+	Domino* array;
 public:
-	Dominoes();
-	Dominoes(size_t counter);
+	Bunch();
+	Bunch(size_t counter);
 	int GetSize() const {
-		return bunch.size();
+		return size;
 	}
-	Dominoes& Add();
-	Dominoes& DeleteAt(size_t i);
-	Dominoes& Delete();
+	Bunch(const Bunch &other);
+    Bunch(Bunch&& other) noexcept;
+	~Bunch();
+
+	Bunch& Add();
+	Bunch& DeleteAt(size_t i);
+	Bunch& Delete();
 
 	Domino& operator[] (size_t i);
 	const Domino& operator[] (size_t i) const;
 
-	Dominoes& operator+= (const Domino& one);
-	Dominoes& operator+= (const Dominoes& other);
+	Bunch& operator+= (const Domino& one);
+	Bunch& operator+= (const Bunch& other);
+	Bunch& operator= (const Bunch& other);
+    Bunch& operator= (Bunch&& other) noexcept;
 	
-	Dominoes& Sort();
-	Dominoes* GetSubbunch(int val);
+	Bunch& Sort();
+	Bunch* GetSubBunch(int val);
 };
-
-std::ostream& operator<<(std::ostream&, const Domino&);
-std::ostream& operator<<(std::ostream&, const Dominoes&);
-std::istream& operator>>(std::istream& stream, Domino&);
-std::istream& operator>>(std::istream& stream, Dominoes&);

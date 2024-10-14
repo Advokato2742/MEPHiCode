@@ -1,14 +1,24 @@
 #include "domino.h"
-#include <cstdlib>
 #include <iostream>
 #include <algorithm>
+#include <random>
+
+
+//
+//
+//
+//Domino
+//
+//
+//
 
 Domino::Domino() : left(), right() {  }
 Domino::Domino(int a, int b) : left(a%q), right(b%q) {  }
 
 Domino& Domino::ChangeValues() {
-	left = rand() % (q);
-	right = rand() % (q);
+	std::mt19937 eng {std::random_device{}()};
+	left = eng() % (q);
+	right = eng() % (q);
 	return *this;
 }
 void Domino::Rotate() {
@@ -31,108 +41,188 @@ Domino& Domino::operator =(const Domino& other) {
 	left = other.left;
 	return *this;
 }
+bool Domino::operator <(const Domino& other) const {
+    return this->GetSum() < other.GetSum();
+}
+bool Domino::operator >(const Domino& other) const {
+    return this->GetSum() > other.GetSum();
+}
+bool Domino::operator !=(const Domino& other) const {
+    return this->GetSum() != other.GetSum();
+}
+bool Domino::operator <=(const Domino& other) const {
+    return this->GetSum() <= other.GetSum();
+}
+bool Domino::operator >=(const Domino& other) const {
+    return this->GetSum() >= other.GetSum();
+}
 
-Dominoes::Dominoes() {  }
-Dominoes::Dominoes(size_t counter) {
-	bunch.reserve(counter);
-	for (int i = 0; i < counter; i++) {
-		bunch.push_back(Domino().ChangeValues());
+//
+//
+//
+//Bunch
+//
+//
+//
+
+Bunch::Bunch() : size(0), array(nullptr) {  }
+Bunch::Bunch(size_t counter) : size(counter) {
+	array = new Domino[counter];
+	std::for_each(array, (array+counter), [](Domino& d){ d = Domino().ChangeValues();});
+}
+
+Bunch::Bunch(const Bunch& other) {
+	Domino* tmp = new Domino[other.size];
+	std::copy(other.array, (other.array+other.size), tmp);
+	delete [] array;
+	size = other.size;
+	array = tmp;
+}
+
+Bunch::Bunch(Bunch&& other) noexcept {
+    array = other.array;
+	size = other.size;
+	other.size = 0;
+	other.array = nullptr;
+}
+Bunch::~Bunch() {
+	delete [] array;
+}
+
+Bunch& Bunch::Add() {
+	Domino* tmp;
+	try {
+		tmp = new Domino[size+1];
+	} catch (...) {
+		return *this;
 	}
-}
-Dominoes& Dominoes::Add() {
-	bunch.push_back(Domino().ChangeValues());
-	return *this;
-}
-Dominoes& Dominoes::DeleteAt(size_t i) {
-	if (i >= bunch.size()) throw std::invalid_argument("incorrect index");
-	bunch[i] = bunch[bunch.size()-1];
-	bunch.pop_back();
+	std::copy(array, (array+size), tmp);
+	delete [] array;
+	tmp[size] = Domino().ChangeValues();
+	size++;
+	array = tmp;
 	return *this;
 }
 
-Dominoes& Dominoes::Delete() {
-	int i = rand() % bunch.size();
+Bunch& Bunch::DeleteAt(size_t i) {
+	if (i >= size) throw std::invalid_argument("incorrect index");
+	Domino* tmp;
+	try {
+		tmp = new Domino[size-1];
+	} catch (...) {
+		return *this;
+	}
+	array[i] = array[size-1];
+	std::copy(array, (array+size), tmp);
+	delete [] array;
+	size--;
+	array = tmp;
+	return *this;
+}
+
+Bunch& Bunch::Delete() {
+	std::mt19937 eng {std::random_device{}()};
+	int i = eng() % size;
 	DeleteAt(i);
 	return *this;
 }
 
-Domino& Dominoes::operator[] (size_t i) {
-	return bunch[i];
+Domino& Bunch::operator[] (size_t i) {
+	return array[i];
 }
-const Domino& Dominoes::operator[] (size_t i) const {
-	return bunch[i];
+const Domino& Bunch::operator[] (size_t i) const {
+	return array[i];
 }
 
-Dominoes& Dominoes::operator+= (const Domino& one) {
-	bunch.push_back(one);
+Bunch& Bunch::operator+= (const Domino& one) {
+	Domino* tmp;
+	try {
+		tmp = new Domino[size+1];
+	} catch (...) {
+		return *this;
+	}
+	std::copy(array, (array+size), tmp);
+	delete [] array;
+	tmp[size] = one;
+	size++;
+	array = tmp;
 	return *this;
 }
-Dominoes& Dominoes::operator+= (const Dominoes& other) {
-	bunch.reserve(bunch.size() + other.bunch.size());
-	for (int i = 0; i < other.bunch.size(); i++) {
-		bunch.push_back(other[i]);
+Bunch& Bunch::operator+= (const Bunch& other) {
+	Domino* tmp;
+	try {
+		tmp = new Domino[size+other.size];
+	} catch (...) {
+		return *this;
+	}
+	std::copy(array, (array+size), tmp);
+	std::copy(other.array, (other.array+other.size), (tmp+size));
+	delete [] array;
+	size = size + other.size;
+	array = tmp;
+	return *this;
+}
+
+Bunch& Bunch::operator= (const Bunch& other) {
+	if (this == &other)
+		return *this;
+	if (size != other.size) {
+		Domino* tmp;
+		try {
+			tmp = new Domino[other.size];
+		} catch (...) {
+			return *this;
+		}
+		std::copy(other.array, (other.array+other.size), tmp);
+		delete [] array;
+		size = other.size;
+		array = tmp;
+	} else {
+		std::copy(other.array, (other.array+other.size), array);
 	}
 	return *this;
 }
-Dominoes& Dominoes::Sort() {
-	std::sort(bunch.begin(), bunch.end(), [](auto& d1, auto& d2) { return (d1.GetSum() < d2.GetSum()); });
+
+Bunch& Bunch::operator= (Bunch&& other) noexcept {
+    delete [] array;
+    array = other.array;
+	size = other.size;
+	other.size = 0;
+	other.array = nullptr;
+    return *this;
+}
+
+Bunch& Bunch::Sort() {
+	std::sort(array, (array+size), [](Domino& d1, Domino& d2) { return (d1 < d2); });
 	return *this;
 }
-Dominoes* Dominoes::GetSubbunch(int val) {
-	Dominoes* other = new Dominoes();
-	for (int i = 0; i < bunch.size(); i++) {
-		if (bunch[i].Left() == val || bunch[i].Right() == val) {
-			*other += bunch[i];
-			DeleteAt(i);
-			i--;
+
+Bunch* Bunch::GetSubBunch(int val) {
+	int oldLen = 0;
+	bool* withVal = new bool[size]{false};
+	for (int i = 0; i < size; i++) {
+		if ((array[i].Left() == val) || (array[i].Right() == val)) {
+			withVal[i] = true;
+		} else {
+			oldLen++;
 		}
 	}
+	int newLen = size - oldLen;
+	Domino* old = new Domino[oldLen];
+	Domino* tmp;
+	try {
+		tmp = new Domino[newLen];
+	} catch(...) {
+		delete [] old;
+		throw std::bad_alloc();
+	}
+	std::copy_if(array, array+size, tmp, [&](Domino& d){return withVal[(&d - array)];});
+	std::copy_if(array, array+size, old, [&](Domino& d){return !withVal[(&d - array)];});
+	delete [] array;
+	array = old;
+	size = oldLen;
+	Bunch* other = new Bunch();
+	other->array = tmp;
+	other->size = newLen;
 	return other;
 }
-
-std::ostream& operator<<(std::ostream& stream, const Domino& one) {
-	stream << one.GetImage();
-	return stream;
-}
-std::ostream& operator<<(std::ostream& stream, const Dominoes& one) {
-	for (int i = 0; i < one.GetSize(); i++) {
-		stream << one[i];
-		if (i != one.GetSize()) {
-			stream << " ";
-		}
-	}
-	return stream;
-}
-
-std::istream& operator>>(std::istream& stream, Domino& one) {
-	int t1, t2;
-	stream >> t1 >> t2;
-	if(stream.good()) {
-		if(t1 >= 0 && t2 >= 0) {
-			one.left = t1 % 7;
-			one.right = t2 % 7;
-		} else {
-			stream.setstate(std::ios::failbit);
-		}
-	}
-	return stream;
-};
-
-std::istream& operator>>(std::istream& stream, Dominoes& one) {
-	int i = 0;
-	while (stream.good() && i < one.GetSize()) {
-		int t1, t2;
-		stream >> t1 >> t2;
-		if(stream.good()) {
-			if(t1 >= 0 && t2 >= 0) {
-				one[i].left = t1 % 7;
-				one[i].right = t2 % 7;
-			} else {
-				stream.setstate(std::ios::failbit);
-				break;
-			}
-		}
-		i++;
-	}
-	return stream;
-};
