@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <random>
 
-
 //
 //
 //
@@ -12,6 +11,8 @@
 //
 //
 
+//number of domino values
+const uint8_t q{7};
 Domino::Domino() : left(), right() {  }
 Domino::Domino(int a, int b) : left(a%q), right(b%q) {  }
 
@@ -112,8 +113,8 @@ Bunch& Bunch::DeleteAt(size_t i) {
 	} catch (...) {
 		return *this;
 	}
-	array[i] = array[size-1];
-	std::copy(array, (array+size), tmp);
+	std::copy(array, (array+i), tmp);
+	std::copy(array+i+1, array+size, tmp+i-1);
 	delete [] array;
 	size--;
 	array = tmp;
@@ -200,15 +201,21 @@ Bunch& Bunch::Sort() {
 Bunch* Bunch::GetSubBunch(int val) {
 	int oldLen = 0;
 	bool* withVal = new bool[size]{false};
-	for (int i = 0; i < size; i++) {
-		if ((array[i].Left() == val) || (array[i].Right() == val)) {
-			withVal[i] = true;
-		} else {
-			oldLen++;
-		}
-	}
+	std::transform(array, array+size, withVal, [&](Domino& d) {
+					if ((d.Left() == val) || (d.Right() == val)) {
+						return true;
+					} else {
+						oldLen++;
+						return false;}});
+
 	int newLen = size - oldLen;
-	Domino* old = new Domino[oldLen];
+	Domino* old;
+	try {
+		old = new Domino[oldLen];
+	} catch(...) {
+		delete [] old;
+		throw std::bad_alloc();
+	}
 	Domino* tmp;
 	try {
 		tmp = new Domino[newLen];

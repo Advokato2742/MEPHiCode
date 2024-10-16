@@ -1,11 +1,9 @@
 #pragma once
 #include <cstdint>
-#include <vector>
 #include <string>
 
 class Domino {
 private:
-	static inline const uint8_t q{7};
     uint8_t left{};
     uint8_t right{};
 public:
