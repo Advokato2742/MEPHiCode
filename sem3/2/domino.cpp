@@ -14,7 +14,7 @@
 //number of domino values
 const uint8_t q{7};
 Domino::Domino() : left(), right() {  }
-Domino::Domino(int a, int b) : left(a%q), right(b%q) {  }
+Domino::Domino(const int a, const int b) : left(a%q), right(b%q) {  }
 
 Domino& Domino::ChangeValues() {
 	std::mt19937 eng {std::random_device{}()};
@@ -105,8 +105,8 @@ Bunch& Bunch::Add() {
 	return *this;
 }
 
-Bunch& Bunch::DeleteAt(size_t i) {
-	if (i >= size) throw std::invalid_argument("incorrect index");
+Bunch& Bunch::DeleteAt(const size_t i) {
+	if (i >= size || size == 0) throw std::invalid_argument("incorrect index");
 	Domino* tmp;
 	try {
 		tmp = new Domino[size-1];
@@ -128,10 +128,10 @@ Bunch& Bunch::Delete() {
 	return *this;
 }
 
-Domino& Bunch::operator[] (size_t i) {
+Domino& Bunch::operator[] (const size_t i) {
 	return array[i];
 }
-const Domino& Bunch::operator[] (size_t i) const {
+const Domino& Bunch::operator[] (const size_t i) const {
 	return array[i];
 }
 
@@ -198,7 +198,8 @@ Bunch& Bunch::Sort() {
 	return *this;
 }
 
-Bunch* Bunch::GetSubBunch(int val) {
+Bunch* Bunch::GetSubBunch(const int val) {
+	if (val < 0 || val >= q) throw std::invalid_argument("value of a Domino cannot be less than zero or greater than 6");
 	int oldLen = 0;
 	bool* withVal = new bool[size]{false};
 	std::transform(array, array+size, withVal, [&](Domino& d) {

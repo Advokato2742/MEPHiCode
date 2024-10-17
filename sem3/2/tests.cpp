@@ -120,6 +120,7 @@ int testmove() {
 	return 1;
 }
 int main() {
-	testsub();
+	int a[] = {1, 2, 3, 4};
+	std::cout << a[4];
 	return 0;
 }
