@@ -1,6 +1,6 @@
 ﻿#define CATCH_CONFIG_MAIN
 #include "../properties/properties.h"
-#include "catch.hpp"
+#include "../../../catch.hpp"
 
 TEST_CASE("from properties") {
 	SECTION("string nothtow case") {
